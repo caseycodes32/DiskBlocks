@@ -8,6 +8,8 @@
 #include <GL/GL.h>
 #include <tchar.h>
 
+#include "disk_crawler.h"
+
 // Data stored per platform window
 struct WGL_WindowData { HDC hDC; };
 
@@ -119,6 +121,11 @@ int main(int, char**)
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::Begin("Hello, world!", &open, dwFlag);        
         ImGui::Text("The humble beginnings of Kyle's disk usage analyzer");
+        ImGui::Text("Drives:");
+        for (int i = 0; i < ListDrives().size(); i++)
+        {
+            ImGui::Text("  %s:", ListDrives().at(i).c_str());
+        }
         ImGui::End();
 
         // Rendering
