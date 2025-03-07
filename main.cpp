@@ -11,11 +11,16 @@
 // Data stored per platform window
 struct WGL_WindowData { HDC hDC; };
 
+// Constants
+static const POINT      k_WindowSize = {512, 128};
+
 // Data
 static HGLRC            g_hRC;
 static WGL_WindowData   g_MainWindow;
 static int              g_Width;
 static int              g_Height;
+static bool             g_MouseDownOnHeader;
+static POINT            g_LastMousePos;
 
 // Forward declarations of helper functions
 bool CreateDeviceWGL(HWND hWnd, WGL_WindowData* data);
@@ -28,9 +33,15 @@ int main(int, char**)
 {
     // Create application window
     //ImGui_ImplWin32_EnableDpiAwareness();
-    WNDCLASSEXW wc = { sizeof(wc), CS_OWNDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr };
+    WNDCLASSEXW wc = { sizeof(wc), CS_OWNDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"DiskBlocks", nullptr };
     ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"Dear ImGui Win32+OpenGL3 Example", WS_OVERLAPPEDWINDOW, 100, 100, 512, 128, nullptr, nullptr, wc.hInstance, nullptr);
+
+    RECT RectWindow;
+	GetWindowRect(GetDesktopWindow(), &RectWindow);
+	int WindowStartX = RectWindow.right / 2 - (k_WindowSize.x / 2);
+	int WindowStartY = RectWindow.bottom / 2 - (k_WindowSize.y / 2);
+
+    HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"DiskBlocks", WS_POPUP, WindowStartX, WindowStartY, k_WindowSize.x, k_WindowSize.y, nullptr, nullptr, wc.hInstance, nullptr);
 
     // Initialize OpenGL
     if (!CreateDeviceWGL(hwnd, &g_MainWindow))
@@ -104,7 +115,7 @@ int main(int, char**)
 		if (!open)
 			ExitProcess(0);
 
-        ImGui::SetNextWindowSize(ImVec2(512, 128));
+        ImGui::SetNextWindowSize(ImVec2(k_WindowSize.x, k_WindowSize.y));
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::Begin("Hello, world!", &open, dwFlag);        
         ImGui::Text("The humble beginnings of Kyle's disk usage analyzer");
@@ -166,6 +177,10 @@ void CleanupDeviceWGL(HWND hWnd, WGL_WindowData* data)
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+bool mousedown = false;
+POINT lastLocation;
+POINT currentpos;
+
 // Win32 message handler
 // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
 // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
@@ -185,6 +200,40 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             g_Height = HIWORD(lParam);
         }
         return 0;
+    case WM_LBUTTONDOWN:
+    {
+        GetCursorPos(&g_LastMousePos);
+        RECT RectWindow;
+        GetWindowRect(hWnd, &RectWindow);
+        if (g_LastMousePos.y - RectWindow.top < 16)
+        {
+            g_MouseDownOnHeader = true;
+        }
+        break;
+    }
+    case WM_LBUTTONUP:
+    {
+        g_MouseDownOnHeader = false;
+        break;
+    }
+    case WM_MOUSEMOVE:
+    {
+        if (g_MouseDownOnHeader)
+        {
+            POINT CurrentMousePoint;
+            GetCursorPos(&CurrentMousePoint);
+            int xDiff = CurrentMousePoint.x - g_LastMousePos.x;
+            int yDiff = CurrentMousePoint.y - g_LastMousePos.y;
+            
+            RECT RectWindow;
+            GetWindowRect(hWnd, &RectWindow);
+
+            SetWindowPos(hWnd, nullptr, RectWindow.left + xDiff, RectWindow.top + yDiff, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+            g_LastMousePos = CurrentMousePoint;
+        }
+        break;
+    }
     case WM_SYSCOMMAND:
         if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
             return 0;
