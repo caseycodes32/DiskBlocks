@@ -1,5 +1,6 @@
 #include "disk_crawler.h"
 
+
 std::vector<std::string> ListDrives()
 {
     std::vector<std::string> vDriveStrings;
@@ -15,4 +16,26 @@ std::vector<std::string> ListDrives()
         }
     }
     return vDriveStrings;
+}
+
+std::vector<std::string> ListSubDirectories(std::string path)
+{
+    std::vector<std::string> vDirectoryStrings;
+    
+    DIR* dirCurrentDirectory = opendir(path.c_str());
+    struct dirent* direntIterator;
+    if (dirCurrentDirectory != nullptr)
+    {
+        while (true)
+        {
+            direntIterator = readdir(dirCurrentDirectory);
+            if (direntIterator != nullptr)
+            {
+                vDirectoryStrings.push_back(direntIterator->d_name);
+            }
+            else break;
+        }
+        closedir (dirCurrentDirectory);
+    }
+    return vDirectoryStrings;
 }
