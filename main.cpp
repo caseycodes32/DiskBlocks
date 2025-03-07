@@ -119,7 +119,7 @@ int main(int, char**)
 
         ImGui::SetNextWindowSize(ImVec2(k_WindowSize.x, k_WindowSize.y));
         ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::Begin("Hello, world!", &open, dwFlag);        
+        ImGui::Begin("DiskBlocks", &open, dwFlag);        
         ImGui::Text("The humble beginnings of Kyle's disk usage analyzer");
         ImGui::Text("Drives:");
         for (int i = 0; i < ListDrives().size(); i++)
