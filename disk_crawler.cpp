@@ -30,6 +30,8 @@ std::vector<std::string> ListSubDirectories(std::string path)
             direntIterator = readdir(dirCurrentDirectory);
             if (direntIterator != nullptr)
             {
+                if (strcmp(direntIterator->d_name, ".") == 0) continue;
+                if (strcmp(direntIterator->d_name, "..") == 0) continue;
                 if (PathIsDirectory(path + "/" + direntIterator->d_name))
                     vDirectoryStrings.push_back(path + "/" + direntIterator->d_name);
             }
