@@ -98,7 +98,12 @@ uint64_t GetFileSize(std::string path)
 void PopulateTree(DiskElement &tree, std::string path)
 {
     tree.name = path;
-    if (PathIsDirectory(path))
+    if (!PathIsDirectory(path))
+    {
+        tree.is_directory = false;
+        tree.size = GetFileSize(path);
+    }
+    else
     {
         tree.is_directory = true;
         tree.size = 0;
@@ -109,9 +114,17 @@ void PopulateTree(DiskElement &tree, std::string path)
             tree.children.push_back(child);
         }
     }
-    else
-    {
-        tree.is_directory = false;
-        tree.size = GetFileSize(path);
-    }
+}
+
+void PopulateTreeThread(DiskElement &tree, std::string path, bool &done)
+{
+    std::thread tPopulateTree(PopulateTree, std::ref(tree), path);
+    tPopulateTree.join();
+    done = true;
+}
+
+std::thread InitializePopulateTreeThread(DiskElement &tree, std::string path, bool &done)
+{
+    std::thread tPopulateTree(PopulateTreeThread, std::ref(tree), path, std::ref(done));
+    return tPopulateTree;
 }
