@@ -1,6 +1,6 @@
 #include "ui_helper.h"
 
-void UIDirectoryTree(const DiskElement &tree)
+void UIDirectoryTree(DiskElement &tree)
 {
     int y = 13;
 }
