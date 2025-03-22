@@ -130,3 +130,4 @@ std::thread InitializePopulateTreeThread(DiskElement &tree, std::string path, bo
     std::thread tPopulateTree(PopulateTreeThread, std::ref(tree), path, std::ref(done));
     return tPopulateTree;
 }
+
