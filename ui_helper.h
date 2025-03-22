@@ -6,3 +6,5 @@
 #include "disk_crawler.h"
 
 void UIDirectoryTree(DiskElement &tree);
+void PopulateSubDirectories(DiskElement &tree, std::string path);
+std::string GetDirectoryNameFromPath(std::string path);
