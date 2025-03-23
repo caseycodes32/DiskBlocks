@@ -5,6 +5,6 @@
 #include "imgui_impl_win32.h"
 #include "disk_crawler.h"
 
-void UIDirectoryTree(DiskElement &tree);
+void UIDirectoryTree(DiskElement &tree, std::string &selected_path);
 void PopulateSubDirectories(DiskElement &tree, std::string path);
 std::string GetDirectoryNameFromPath(std::string path);

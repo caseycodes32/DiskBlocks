@@ -1,15 +1,16 @@
 #include "ui_helper.h"
 
-void UIDirectoryTree(DiskElement &tree)
+void UIDirectoryTree(DiskElement &tree, std::string &selected_path)
 {
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
     bool node_open = ImGui::TreeNodeEx((GetDirectoryNameFromPath(tree.name)).c_str(), flags);
     if (node_open) 
     {
+        selected_path = tree.name;
         if (tree.children.size() == 0) PopulateSubDirectories(tree, tree.name);
         for (DiskElement &child : tree.children)
         {
-            UIDirectoryTree(child);
+            UIDirectoryTree(child, selected_path);
         }
         ImGui::TreePop();
     }
