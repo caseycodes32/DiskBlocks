@@ -110,6 +110,7 @@ int main(int, char**)
     std::thread tTree = InitializePopulateTreeThread(de_FileTree, "C:", b_ScanComplete);
     v_drives = ListDrives();
     i_driveidx = -1;
+    std::string selected_path = "";
 
     while (!done)
     {
@@ -155,7 +156,12 @@ int main(int, char**)
             if (strlen(c_InputPath) != 0)
             {
                 ImGui::SameLine();
-                ImGui::Button("Go");
+                if (ImGui::Button("Go"))
+                {
+                    if (PathIsDirectory(std::string(c_InputPath))) selected_path = std::string(c_InputPath);
+                    else ImGui::Text("No");
+                    
+                }
             }
             for (int i = 0; i < v_drives.size(); i++)
             {
@@ -170,9 +176,11 @@ int main(int, char**)
             if (i_driveidx != -1)
             {
                 ImGui::BeginChild("Directory Selection Tree", ImVec2(-1, 140));
-                    UIDirectoryTree(de_SelectionTree);
+                    UIDirectoryTree(de_SelectionTree, selected_path);
                 ImGui::EndChild();
             }
+            ImGui::Separator();
+            ImGui::Text("Selected dir: %s", selected_path.c_str());
         ImGui::EndChild();
         ImGui::SameLine();
         ImGui::BeginChild("Visualization Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
