@@ -9,12 +9,13 @@
 #include <tchar.h>
 
 #include "disk_crawler.h"
+#include "ui_helper.h"
 
 // Data stored per platform window
 struct WGL_WindowData { HDC hDC; };
 
 // Constants
-static const POINT      k_WindowSize = {512, 128};
+static const POINT      k_WindowSize = {854, 480};
 
 // Data
 static HGLRC            g_hRC;
@@ -23,6 +24,14 @@ static int              g_Width;
 static int              g_Height;
 static bool             g_MouseDownOnHeader;
 static POINT            g_LastMousePos;
+
+// Data
+bool                    b_ScanComplete;
+char                    c_InputPath[260];
+DiskElement             de_FileTree;
+DiskElement             de_SelectionTree;
+std::vector<std::string> v_drives;
+int                     i_driveidx;
 
 // Forward declarations of helper functions
 bool CreateDeviceWGL(HWND hWnd, WGL_WindowData* data);
@@ -71,6 +80,15 @@ int main(int, char**)
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
 
+    // Modify ImGui Style Defaults
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.TabRounding = 8.f;
+    style.FrameRounding = 8.f;
+    style.GrabRounding = 8.f;
+    //style.WindowRounding = 8.f;
+    style.PopupRounding = 8.f;
+    style.ChildRounding = 8.f;
+
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_InitForOpenGL(hwnd);
     ImGui_ImplOpenGL3_Init();
@@ -86,6 +104,13 @@ int main(int, char**)
 
     // Main loop
     bool done = false;
+
+
+    // Initialization code
+    std::thread tTree = InitializePopulateTreeThread(de_FileTree, "C:", b_ScanComplete);
+    v_drives = ListDrives();
+    i_driveidx = -1;
+
     while (!done)
     {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -117,15 +142,42 @@ int main(int, char**)
 		if (!open)
 			ExitProcess(0);
 
+
         ImGui::SetNextWindowSize(ImVec2(k_WindowSize.x, k_WindowSize.y));
         ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::Begin("DiskBlocks", &open, dwFlag);        
-        ImGui::Text("The humble beginnings of Kyle's disk usage analyzer");
-        ImGui::Text("Drives:");
-        for (int i = 0; i < ListDrives().size(); i++)
-        {
-            ImGui::Text("  %s:", ListDrives().at(i).c_str());
-        }
+        ImGui::Begin("DiskBlocks", &open, dwFlag); 
+        
+        ImGui::BeginChild("Selection Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
+            ImGui::Text("Enter a path or choose a drive:");
+            ImGui::PushItemWidth(200);
+            ImGui::InputTextWithHint("##Path", "C:/Folder/xyz", c_InputPath, 260);
+            ImGui::PopItemWidth();
+            if (strlen(c_InputPath) != 0)
+            {
+                ImGui::SameLine();
+                ImGui::Button("Go");
+            }
+            for (int i = 0; i < v_drives.size(); i++)
+            {
+                if (ImGui::Button(v_drives.at(i).c_str(), ImVec2(30, 30)))
+                {
+                    i_driveidx = i;
+                    de_SelectionTree = DiskElement();
+                    de_SelectionTree.name = v_drives.at(i) + ":";
+                }
+                if (i+1 != v_drives.size()) ImGui::SameLine();
+            }
+            if (i_driveidx != -1)
+            {
+                ImGui::BeginChild("Directory Selection Tree", ImVec2(-1, 140));
+                    UIDirectoryTree(de_SelectionTree);
+                ImGui::EndChild();
+            }
+        ImGui::EndChild();
+        ImGui::SameLine();
+        ImGui::BeginChild("Visualization Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
+        ImGui::EndChild();
+
         ImGui::End();
 
         // Rendering
@@ -138,6 +190,9 @@ int main(int, char**)
         // Present
         ::SwapBuffers(g_MainWindow.hDC);
     }
+
+    //join thread
+    tTree.join();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplWin32_Shutdown();
