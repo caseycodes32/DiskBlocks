@@ -30,8 +30,10 @@ bool                    b_ScanComplete;
 char                    c_InputPath[260];
 DiskElement             de_FileTree;
 DiskElement             de_SelectionTree;
-std::vector<std::string> v_drives;
-int                     i_driveidx;
+std::vector<std::string> v_Drives;
+int                     i_DriveIdx;
+std::string             s_SelectedPath;
+bool                    b_SelectionError;
 
 // Forward declarations of helper functions
 bool CreateDeviceWGL(HWND hWnd, WGL_WindowData* data);
@@ -108,9 +110,8 @@ int main(int, char**)
 
     // Initialization code
     std::thread tTree = InitializePopulateTreeThread(de_FileTree, "C:", b_ScanComplete);
-    v_drives = ListDrives();
-    i_driveidx = -1;
-    std::string selected_path = "";
+    v_Drives = ListDrives();
+    i_DriveIdx = -1;
 
     while (!done)
     {
@@ -156,31 +157,37 @@ int main(int, char**)
             if (strlen(c_InputPath) != 0)
             {
                 ImGui::SameLine();
-                if (ImGui::Button("Go"))
+                if (ImGui::Button("Select"))
                 {
-                    if (PathIsDirectory(std::string(c_InputPath))) selected_path = std::string(c_InputPath);
-                    else ImGui::Text("No");
-                    
+                    if (PathIsDirectory(std::string(c_InputPath)))
+                    {
+                        b_SelectionError = false;
+                        s_SelectedPath = std::string(c_InputPath);
+                    }
+                    else
+                        b_SelectionError = true;
                 }
+                if (b_SelectionError)
+                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Error: Invalid Directory");
             }
-            for (int i = 0; i < v_drives.size(); i++)
+            for (int i = 0; i < v_Drives.size(); i++)
             {
-                if (ImGui::Button(v_drives.at(i).c_str(), ImVec2(30, 30)))
+                if (ImGui::Button(v_Drives.at(i).c_str(), ImVec2(30, 30)))
                 {
-                    i_driveidx = i;
+                    i_DriveIdx = i;
                     de_SelectionTree = DiskElement();
-                    de_SelectionTree.name = v_drives.at(i) + ":";
+                    de_SelectionTree.name = v_Drives.at(i) + ":";
                 }
-                if (i+1 != v_drives.size()) ImGui::SameLine();
+                if (i+1 != v_Drives.size()) ImGui::SameLine();
             }
-            if (i_driveidx != -1)
+            if (i_DriveIdx != -1)
             {
                 ImGui::BeginChild("Directory Selection Tree", ImVec2(-1, 140));
-                    UIDirectoryTree(de_SelectionTree, selected_path);
+                    UIDirectoryTree(de_SelectionTree, s_SelectedPath);
                 ImGui::EndChild();
             }
             ImGui::Separator();
-            ImGui::Text("Selected dir: %s", selected_path.c_str());
+            ImGui::Text("Selected dir: %s", s_SelectedPath.c_str());
         ImGui::EndChild();
         ImGui::SameLine();
         ImGui::BeginChild("Visualization Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
