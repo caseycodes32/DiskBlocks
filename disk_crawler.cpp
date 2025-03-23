@@ -37,8 +37,8 @@ std::vector<std::string> ListSubDirectories(std::string path)
             }
             else break;
         }
-        closedir (dirCurrentDirectory);
     }
+    closedir (dirCurrentDirectory);
     return vDirectoryStrings;
 }
 
@@ -116,6 +116,56 @@ void PopulateTree(DiskElement &tree, std::string path)
             tree.children.push_back(child);
         }
     }
+}
+
+void PopulateTree2(DiskElement &tree, std::string path, DiskElement *parent)
+{
+    tree.name = path;
+    if (parent != nullptr) tree.parent = parent;
+    if (!PathIsDirectory(path))
+    {
+        tree.is_directory = false;
+        tree.size = GetFileSize(path);
+    }
+    else
+    {
+        tree.is_directory = true;
+        tree.size = 0;
+        for (std::string DirElement : ListElementsInDirectory(path))
+        {
+            DiskElement child;
+            PopulateTree2(child, DirElement, &tree);
+            tree.children.push_back(child);
+        }
+    }
+}
+
+void PopulateTreeByLevel(DiskElement &tree, std::string path, DiskElement *parent)
+{
+    tree.name = path;
+    if (parent != nullptr) tree.parent = parent;
+    tree.is_directory = true;
+    tree.size = 0;
+    for (std::string DirElement : ListSubDirectories(path))
+    {
+        DiskElement child;
+        child.name = DirElement;
+        child.is_directory = true;
+        child.size = 0;
+        tree.children.push_back(child);
+    }
+}
+
+std::string GetPathFromTreeNode(DiskElement *tree_node)
+{
+    std::string path = tree_node->name;
+    
+    while (tree_node->parent != nullptr)
+    {
+        tree_node = tree_node->parent;
+        path = tree_node->name + "/" + path;
+    }
+    return path;
 }
 
 void PopulateTreeThread(DiskElement &tree, std::string path, bool &done)
