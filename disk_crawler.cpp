@@ -70,8 +70,10 @@ bool PathIsDirectory(std::string path)
 {
     DWORD dwFileAttributes = GetFileAttributesA(path.c_str());
 
-    if ((dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+    if ((dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && (dwFileAttributes != INVALID_FILE_ATTRIBUTES))
+    {
         return true;
+    }
 
     else return false;
 }
