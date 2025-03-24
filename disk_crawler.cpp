@@ -70,20 +70,15 @@ bool PathIsDirectory(std::string path)
 {
     DWORD dwFileAttributes = GetFileAttributesA(path.c_str());
 
-    if ((dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && (dwFileAttributes != INVALID_FILE_ATTRIBUTES))
-    {
-        return true;
-    }
-
-    else return false;
+    return ((dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && (dwFileAttributes != INVALID_FILE_ATTRIBUTES));
 }
 
 std::string FilenameFromPath(std::string path)
 {
-    size_t IndexLastSlash = path.find_last_of("/\\");
-    if (IndexLastSlash != std::string::npos)
+    size_t idxLastSlash = path.find_last_of("/\\");
+    if (idxLastSlash != std::string::npos)
     {
-        return path.substr(IndexLastSlash + 1);
+        return path.substr(idxLastSlash + 1);
     }
     return path;
 }
@@ -99,9 +94,10 @@ uint64_t GetFileSize(std::string path)
     return (FileData.nFileSizeLow | (__int64)FileData.nFileSizeHigh << 32);
 }
 
-void PopulateTree(DiskElement &tree, std::string path)
+void PopulateTree(DiskElement &tree, std::string path, std::string &workingdir)
 {
     tree.name = path;
+    workingdir = path;
     if (!PathIsDirectory(path))
     {
         tree.is_directory = false;
@@ -114,7 +110,7 @@ void PopulateTree(DiskElement &tree, std::string path)
         for (std::string DirElement : ListElementsInDirectory(path))
         {
             DiskElement child;
-            PopulateTree(child, DirElement);
+            PopulateTree(child, DirElement, workingdir);
             tree.children.push_back(child);
         }
     }
@@ -170,16 +166,16 @@ std::string GetPathFromTreeNode(DiskElement *tree_node)
     return path;
 }
 
-void PopulateTreeThread(DiskElement &tree, std::string path, bool &done)
+void PopulateTreeThread(DiskElement &tree, std::string path, bool &done, std::string &workingdir)
 {
-    std::thread tPopulateTree(PopulateTree, std::ref(tree), path);
+    std::thread tPopulateTree(PopulateTree, std::ref(tree), path, std::ref(workingdir));
     tPopulateTree.join();
     done = true;
 }
 
-std::thread InitializePopulateTreeThread(DiskElement &tree, std::string path, bool &done)
+std::thread InitializePopulateTreeThread(DiskElement &tree, std::string path, bool &done, std::string &workingdir)
 {
-    std::thread tPopulateTree(PopulateTreeThread, std::ref(tree), path, std::ref(done));
+    std::thread tPopulateTree(PopulateTreeThread, std::ref(tree), path, std::ref(done), std::ref(workingdir));
     return tPopulateTree;
 }
 
