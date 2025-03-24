@@ -192,7 +192,7 @@ int main(int, char**)
             }
             ImGui::Separator();
             ImGui::Text("Selected dir: %s", s_SelectedPath.c_str());
-            if (ImGui::Button("Begin Scan"))
+            if (ImGui::Button("Begin Scan") && ts_ScanComplete != ThreadStatus::RUNNING)
             {
                 if (ts_ScanComplete == ThreadStatus::COMPLETE)
                     t_GenerateTree.join();
