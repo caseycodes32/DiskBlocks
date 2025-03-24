@@ -94,6 +94,19 @@ uint64_t GetFileSize(std::string path)
     return (FileData.nFileSizeLow | (__int64)FileData.nFileSizeHigh << 32);
 }
 
+uint64_t GetFileTime(std::string path)
+{
+    WIN32_FIND_DATAA FileData;
+    FILETIME FileTime;
+    HANDLE FileHandle = FindFirstFileA(path.c_str(), &FileData);
+    if (FileHandle == INVALID_HANDLE_VALUE)
+        return -1;
+
+    FileTime = FileData.ftLastAccessTime;
+    FindClose(FileHandle);
+    return (FileTime.dwLowDateTime | (__int64)FileTime.dwLowDateTime << 32);
+}
+
 void PopulateTree(DiskElement &tree, std::string path, std::string &workingdir)
 {
     tree.name = path;
@@ -136,22 +149,6 @@ void PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std
             PopulateTree2(child, &tree, DirElement.substr(DirElement.find_last_of("/\\") + 1), workingdir);
             tree.children.push_back(child);
         }
-    }
-}
-
-void PopulateTreeByLevel(DiskElement &tree, std::string path, DiskElement *parent)
-{
-    tree.name = path;
-    if (parent != nullptr) tree.parent = parent;
-    tree.is_directory = true;
-    tree.size = 0;
-    for (std::string DirElement : ListSubDirectories(path))
-    {
-        DiskElement child;
-        child.name = DirElement;
-        child.is_directory = true;
-        child.size = 0;
-        tree.children.push_back(child);
     }
 }
 

@@ -36,6 +36,7 @@ std::vector<std::string> ListElementsInDirectory(std::string path);
 bool PathIsDirectory(std::string path);
 std::string FilenameFromPath(std::string path);
 uint64_t GetFileSize(std::string path);
+uint64_t GetFileTime(std::string path);
 void PopulateTree(DiskElement &tree, std::string path, std::string &workingdir);
 void PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std::string &workingdir);
 std::string GetPathFromTreeNode(DiskElement *tree_node);
