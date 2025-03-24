@@ -116,11 +116,12 @@ void PopulateTree(DiskElement &tree, std::string path, std::string &workingdir)
     }
 }
 
-void PopulateTree2(DiskElement &tree, std::string path, DiskElement *parent)
+void PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std::string &workingdir)
 {
     tree.name = path;
+    workingdir = path;
     if (parent != nullptr) tree.parent = parent;
-    if (!PathIsDirectory(path))
+    if (!PathIsDirectory(GetPathFromTreeNode(&tree)))
     {
         tree.is_directory = false;
         tree.size = GetFileSize(path);
@@ -129,10 +130,10 @@ void PopulateTree2(DiskElement &tree, std::string path, DiskElement *parent)
     {
         tree.is_directory = true;
         tree.size = 0;
-        for (std::string DirElement : ListElementsInDirectory(path))
+        for (std::string DirElement : ListElementsInDirectory(GetPathFromTreeNode(&tree)))
         {
             DiskElement child;
-            PopulateTree2(child, DirElement, &tree);
+            PopulateTree2(child, &tree, DirElement.substr(DirElement.find_last_of("/\\") + 1), workingdir);
             tree.children.push_back(child);
         }
     }
@@ -168,7 +169,7 @@ std::string GetPathFromTreeNode(DiskElement *tree_node)
 
 void PopulateTreeThread(DiskElement &tree, std::string path, ThreadStatus &done, std::string &workingdir)
 {
-    std::thread tPopulateTree(PopulateTree, std::ref(tree), path, std::ref(workingdir));
+    std::thread tPopulateTree(PopulateTree2, std::ref(tree), nullptr, path, std::ref(workingdir));
     tPopulateTree.join();
     done = ThreadStatus::COMPLETE;
 }
