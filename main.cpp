@@ -17,7 +17,7 @@ struct WGL_WindowData { HDC hDC; };
 // Constants
 static const POINT      k_WindowSize = {854, 480};
 
-// Data
+// UI Data
 static HGLRC            g_hRC;
 static WGL_WindowData   g_MainWindow;
 static int              g_Width;
@@ -25,9 +25,10 @@ static int              g_Height;
 static bool             g_MouseDownOnHeader;
 static POINT            g_LastMousePos;
 
-// Data
+// Program Data
 std::thread             t_GenerateTree;
 ThreadStatus            ts_ScanComplete;
+bool                    b_ScanLastModified;
 std::string             s_ScanActiveDirectory;
 char                    c_InputPath[260];
 DiskElement             de_FileTree;
@@ -191,7 +192,7 @@ int main(int, char**)
                 ImGui::EndChild();
             }
             ImGui::Separator();
-            ImGui::Text("Selected dir: %s", s_SelectedPath.c_str());
+            ImGui::Text("Selected directory: %s", s_SelectedPath.c_str());
             if (ImGui::Button("Begin Scan") && ts_ScanComplete != ThreadStatus::RUNNING)
             {
                 if (ts_ScanComplete == ThreadStatus::COMPLETE)
@@ -205,6 +206,7 @@ int main(int, char**)
                 ImGui::Text("%s", s_ScanActiveDirectory.c_str());
                 ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Loading %s", GetCurrentLoadingSymbol().c_str());
             }
+            ImGui::Checkbox("Scan file access time", &b_ScanLastModified);
         ImGui::EndChild();
         ImGui::SameLine();
         ImGui::BeginChild("Visualization Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
