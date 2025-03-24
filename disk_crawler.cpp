@@ -166,15 +166,16 @@ std::string GetPathFromTreeNode(DiskElement *tree_node)
     return path;
 }
 
-void PopulateTreeThread(DiskElement &tree, std::string path, bool &done, std::string &workingdir)
+void PopulateTreeThread(DiskElement &tree, std::string path, ThreadStatus &done, std::string &workingdir)
 {
     std::thread tPopulateTree(PopulateTree, std::ref(tree), path, std::ref(workingdir));
     tPopulateTree.join();
-    done = true;
+    done = ThreadStatus::COMPLETE;
 }
 
-std::thread InitializePopulateTreeThread(DiskElement &tree, std::string path, bool &done, std::string &workingdir)
+std::thread InitializePopulateTreeThread(DiskElement &tree, std::string path, ThreadStatus &done, std::string &workingdir)
 {
+    done = ThreadStatus::RUNNING;
     std::thread tPopulateTree(PopulateTreeThread, std::ref(tree), path, std::ref(done), std::ref(workingdir));
     return tPopulateTree;
 }

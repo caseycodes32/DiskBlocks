@@ -23,6 +23,13 @@ struct DiskElement
     DiskElement *parent = nullptr;
 };
 
+enum ThreadStatus
+{
+  WAITING = 0,
+  RUNNING = 1,
+  COMPLETE = 2
+};
+
 std::vector<std::string> ListDrives();
 std::vector<std::string> ListSubDirectories(std::string path);
 std::vector<std::string> ListElementsInDirectory(std::string path);
@@ -30,5 +37,5 @@ bool PathIsDirectory(std::string path);
 std::string FilenameFromPath(std::string path);
 uint64_t GetFileSize(std::string path);
 void PopulateTree(DiskElement &tree, std::string path, std::string &workingdir);
-void PopulateTreeThread(DiskElement &tree, std::string path, bool &done, std::string &workingdir);
-std::thread InitializePopulateTreeThread(DiskElement &tree, std::string path, bool &done, std::string &workingdir);
+void PopulateTreeThread(DiskElement &tree, std::string path, ThreadStatus &done, std::string &workingdir);
+std::thread InitializePopulateTreeThread(DiskElement &tree, std::string path, ThreadStatus &done, std::string &workingdir);
