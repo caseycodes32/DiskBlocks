@@ -26,7 +26,9 @@ static bool             g_MouseDownOnHeader;
 static POINT            g_LastMousePos;
 
 // Data
-bool                    b_ScanComplete;
+std::thread             t_GenerateTree;
+ThreadStatus            ts_ScanComplete;
+std::string             s_ScanActiveDirectory;
 char                    c_InputPath[260];
 DiskElement             de_FileTree;
 DiskElement             de_SelectionTree;
@@ -109,9 +111,10 @@ int main(int, char**)
 
 
     // Initialization code
-    std::thread tTree = InitializePopulateTreeThread(de_FileTree, "C:", b_ScanComplete);
+    //std::thread tTree = InitializePopulateTreeThread(de_FileTree, "C:", b_ScanComplete, s_ScanActiveDirectory);
     v_Drives = ListDrives();
     i_DriveIdx = -1;
+    ts_ScanComplete = ThreadStatus::WAITING;
 
     while (!done)
     {
@@ -175,8 +178,9 @@ int main(int, char**)
                 if (ImGui::Button(v_Drives.at(i).c_str(), ImVec2(30, 30)))
                 {
                     i_DriveIdx = i;
+                    s_SelectedPath = v_Drives.at(i) + ":";
                     de_SelectionTree = DiskElement();
-                    de_SelectionTree.name = v_Drives.at(i) + ":";
+                    de_SelectionTree.name = s_SelectedPath;
                 }
                 if (i+1 != v_Drives.size()) ImGui::SameLine();
             }
@@ -188,6 +192,19 @@ int main(int, char**)
             }
             ImGui::Separator();
             ImGui::Text("Selected dir: %s", s_SelectedPath.c_str());
+            if (ImGui::Button("Begin Scan"))
+            {
+                if (ts_ScanComplete == ThreadStatus::COMPLETE)
+                    t_GenerateTree.join();
+                ts_ScanComplete = ThreadStatus::WAITING;
+                de_FileTree = DiskElement();
+                t_GenerateTree = InitializePopulateTreeThread(de_FileTree, s_SelectedPath, ts_ScanComplete, s_ScanActiveDirectory);
+            }
+            if (ts_ScanComplete == ThreadStatus::RUNNING)
+            {
+                ImGui::Text("%s", s_ScanActiveDirectory.c_str());
+                ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Loading %s", GetCurrentLoadingSymbol().c_str());
+            }
         ImGui::EndChild();
         ImGui::SameLine();
         ImGui::BeginChild("Visualization Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
@@ -207,7 +224,7 @@ int main(int, char**)
     }
 
     //join thread
-    tTree.join();
+    t_GenerateTree.join();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplWin32_Shutdown();
