@@ -6,8 +6,12 @@
 #include "disk_crawler.h"
 #include <chrono>
 
+static inline bool operator>(const ImVec2& lhs, const ImVec2& rhs)   { return ((lhs.x > rhs.x) && (lhs.y > rhs.y)); }
+static inline bool operator<(const ImVec2& lhs, const ImVec2& rhs)   { return ((lhs.x < rhs.x) && (lhs.y < rhs.y)); }
+
 void UIDirectoryTree(DiskElement &tree, std::string &selected_path);
-void UIDynamicFileVisualizer(DiskElement tree);
+void UIDynamicFileVisualizer(DiskElement tree, int level = 0, int x_pos = 0, int width = 0);
+bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, int color[3], std::string element_name);
 void PopulateSubDirectories(DiskElement &tree, std::string path);
 std::string GetDirectoryNameFromPath(std::string path);
 std::string GetCurrentLoadingSymbol();
