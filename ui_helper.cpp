@@ -16,6 +16,16 @@ void UIDirectoryTree(DiskElement &tree, std::string &selected_path)
     }
 }
 
+void UIDynamicFileVisualizer(DiskElement tree, int level = 0)
+{
+    
+}
+
+bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, int color_idx, std::string element_name)
+{
+    
+}
+
 void PopulateSubDirectories(DiskElement &tree, std::string path)
 {
     for (std::string DirElement : ListSubDirectories(path))

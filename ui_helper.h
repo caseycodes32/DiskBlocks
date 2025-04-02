@@ -7,6 +7,7 @@
 #include <chrono>
 
 void UIDirectoryTree(DiskElement &tree, std::string &selected_path);
+void UIDynamicFileVisualizer(DiskElement tree);
 void PopulateSubDirectories(DiskElement &tree, std::string path);
 std::string GetDirectoryNameFromPath(std::string path);
 std::string GetCurrentLoadingSymbol();
