@@ -129,7 +129,7 @@ void PopulateTree(DiskElement &tree, std::string path, std::string &workingdir)
     }
 }
 
-void PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std::string &workingdir)
+int PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std::string &workingdir)
 {
     tree.name = path;
     workingdir = path;
@@ -138,17 +138,21 @@ void PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std
     {
         tree.is_directory = false;
         tree.size = GetFileSize(path);
+        return tree.size;
     }
     else
     {
         tree.is_directory = true;
-        tree.size = 0;
+
+        uint64_t directory_size = 0;
         for (std::string DirElement : ListElementsInDirectory(GetPathFromTreeNode(&tree)))
         {
             DiskElement child;
-            PopulateTree2(child, &tree, DirElement.substr(DirElement.find_last_of("/\\") + 1), workingdir);
+            directory_size += PopulateTree2(child, &tree, DirElement.substr(DirElement.find_last_of("/\\") + 1), workingdir);
             tree.children.push_back(child);
         }
+        tree.size = directory_size;
+        return tree.size;
     }
 }
 
