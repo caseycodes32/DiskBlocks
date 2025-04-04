@@ -86,6 +86,12 @@ void UIDynamicFileVisualizer(DiskElement tree, int level, int x_pos, int width)
 {
     if (tree.size != 0)
     {
+        // populate VisualizerNode
+        
+
+
+
+
         static int max_width = ImGui::GetWindowContentRegionMax().x - 64;
         ImVec2 origin_coord = ImGui::GetCursorScreenPos();
         origin_coord.x += x_pos;
@@ -95,16 +101,17 @@ void UIDynamicFileVisualizer(DiskElement tree, int level, int x_pos, int width)
         end_coord.y += 20;
         ImDrawList* draw_list = ImGui::GetForegroundDrawList();
 
-        DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[1], tree.name);
-        level += 1;
+        if (level == 0)
+            DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[1], tree);
 
+        level += 1;
 
         int offset = 0;
         int color_cur_idx = 3;
         for (DiskElement child : tree.children)
         {
             int element_width = (static_cast<double>(child.size) / tree.size) * max_width;
-             if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + offset, origin_coord.y + (level * 20)), ImVec2(origin_coord.x + element_width + offset, origin_coord.y + 20 + (level * 20)), maximum_dissimilar_colors[color_cur_idx], child.name))
+             if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + offset, origin_coord.y + (level * 20)), ImVec2(origin_coord.x + element_width + offset, origin_coord.y + 20 + (level * 20)), maximum_dissimilar_colors[color_cur_idx], child))
              {
                 ImGui::NewLine();
                 ImGui::Text("path: %s", GetPathFromTreeNode(&child).c_str()); //debug
@@ -116,19 +123,24 @@ void UIDynamicFileVisualizer(DiskElement tree, int level, int x_pos, int width)
     }
 }
 
-bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, RGBColor color, std::string element_name)
+bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, RGBColor color, DiskElement element)
 {
     bool pressed = false;
     draw_list->AddRectFilled(start_pos, end_pos, IM_COL32(color.r, color.g, color.b, 255));
     int rect_width = end_pos.x - start_pos.x;
-    draw_list->AddText(ImVec2(start_pos.x+6, start_pos.y+3), IM_COL32(255, 255, 255, 255), element_name.c_str());
-    draw_list->AddText(ImVec2(start_pos.x+5, start_pos.y+2), IM_COL32(0, 0, 0, 255), element_name.c_str());
+    draw_list->AddText(ImVec2(start_pos.x+6, start_pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), element.name.c_str());
+    //draw_list->AddText(ImVec2(start_pos.x+5, start_pos.y+2), IM_COL32(0, 0, 0, 255), element_name.c_str());
     if ((ImGui::GetMousePos() > start_pos) && (ImGui::GetMousePos() < end_pos))
     {
-        draw_list->AddRect(start_pos, end_pos, IM_COL32(255, 0, 255, 255));
+        draw_list->AddRect(start_pos, end_pos, IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255));
         pressed = ImGui::IsMouseDown(0);
     }
     return pressed;
+}
+
+RGBColor GetColorNegative(RGBColor color)
+{
+    return RGBColor{255 - color.r, 255 - color.g, 255 - color.b};
 }
 
 std::string BytesToStr(uint64_t bytes)
