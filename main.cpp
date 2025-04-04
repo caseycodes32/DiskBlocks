@@ -210,6 +210,7 @@ int main(int, char**)
         ImGui::EndChild();
         ImGui::SameLine();
         ImGui::BeginChild("Visualization Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
+        if (ts_ScanComplete == ThreadStatus::COMPLETE) UIDynamicFileVisualizer(de_FileTree);
         ImGui::EndChild();
 
         ImGui::End();
