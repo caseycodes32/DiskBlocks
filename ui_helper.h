@@ -13,7 +13,7 @@ static inline bool operator<(const ImVec2& lhs, const ImVec2& rhs)   { return ((
 
 struct VisualizerElement
 {
-    DiskElement de;
+    DiskElement *de;
     int color_idx;
     int level;
 };
@@ -26,7 +26,7 @@ struct RGBColor
 };
 
 void UIDirectoryTree(DiskElement &tree, std::string &selected_path);
-void UIDynamicFileVisualizer(DiskElement tree);
+void UIDynamicFileVisualizer(DiskElement &tree);
 bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, RGBColor color, DiskElement element);
 RGBColor GetColorNegative(RGBColor color);
 std::string BytesToStr(uint64_t bytes);

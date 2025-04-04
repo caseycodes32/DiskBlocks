@@ -82,31 +82,28 @@ void UIDirectoryTree(DiskElement &tree, std::string &selected_path)
     }
 }
 
-void UIDynamicFileVisualizer(DiskElement tree)
+void UIDynamicFileVisualizer(DiskElement &tree)
 {
     if (tree.size != 0)
     {
         static std::vector<std::vector<VisualizerElement>> de_visualizer_list;
 
         static int max_width = ImGui::GetWindowContentRegionMax().x - 64;
+        static int color_idx = 0;
         ImVec2 origin_coord = ImGui::GetCursorScreenPos();
-        ImVec2 end_coord = origin_coord;
         ImDrawList* draw_list = ImGui::GetForegroundDrawList();
-
-        int col_idx = 0;
         
         if (de_visualizer_list.size() == 0)
         {
             std::vector<VisualizerElement> initial_path;
-            initial_path.push_back(VisualizerElement{tree, col_idx++, 0});
+            initial_path.push_back(VisualizerElement{&tree, color_idx++, 0});
             de_visualizer_list.push_back(initial_path);
 
             std::vector<VisualizerElement> initial_children;
-            for (DiskElement child : tree.children)
-                initial_children.push_back(VisualizerElement{child, col_idx++ % 64, 1});
+            for (DiskElement &child : tree.children)
+                initial_children.push_back(VisualizerElement{&child, color_idx++ % 64, 1});
             de_visualizer_list.push_back(initial_children);
         }
-
 
         int row_idx = 0;
         for (std::vector<VisualizerElement> de_row : de_visualizer_list)
@@ -115,52 +112,42 @@ void UIDynamicFileVisualizer(DiskElement tree)
             int col_idx = 0;
             for (VisualizerElement de_column : de_row)
             {
-                if (de_column.de.parent == nullptr)
+                if (de_column.de->parent == nullptr)
                 {
-                    DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[de_column.color_idx], de_column.de);
+                    DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[de_column.color_idx], *de_column.de);
                 }
                 else
                 {
-                    uint64_t parent_disk_size = de_column.de.parent->size;
-                    uint64_t this_element_size = de_column.de.size;
-                    unsigned int this_rect_width = std::round((static_cast<double>(this_element_size) / parent_disk_size) * max_width);
+                    uint64_t parent_disk_size = de_column.de->parent->size;
+                    uint64_t this_element_size = de_column.de->size;
+                    unsigned int this_rect_width;
+                    if (parent_disk_size && this_element_size) this_rect_width = std::round((static_cast<double>(this_element_size) / parent_disk_size) * max_width);
+                    else this_rect_width = 1;
                     ImVec2 rect_lower_right = {origin_coord.x + this_rect_width + rect_offset, origin_coord.y + 20 + (de_column.level * 23)};
                     if (col_idx == de_row.size())
                         rect_lower_right.x = max_width;
-                    if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + rect_offset, origin_coord.y + (de_column.level * 23)), rect_lower_right, maximum_dissimilar_colors[de_column.color_idx], de_column.de))
+                    if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + rect_offset, origin_coord.y + (de_column.level * 23)), rect_lower_right, maximum_dissimilar_colors[de_column.color_idx], *de_column.de))
                     {
-                        if (de_row.size() == row_idx)
+                        if (de_visualizer_list.size() == row_idx + 1)
                         {
-                            std::vector<VisualizerElement> current_children;
-                            for (DiskElement child : de_column.de.children)
-                                current_children.push_back(VisualizerElement{child, col_idx++ % 64, de_column.level + 1});
-                            de_visualizer_list.push_back(current_children);
-                            return;
+                            if (de_column.de->children.size() != 0)
+                            {
+                                std::vector<VisualizerElement> current_children;
+                                for (DiskElement &child : de_column.de->children)
+                                {
+                                    child.parent = de_column.de;
+                                    current_children.push_back(VisualizerElement{&child, ((color_idx++) % 64), de_column.level + 1});
+                                }
+                                de_visualizer_list.push_back(current_children);
+                            }
                         }
                     }
                     rect_offset += this_rect_width;
-                    col_idx++;
                 }
+                col_idx++;
             }
             row_idx++;
         }
-
-        //DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[1], tree);
-        /*
-        int color_cur_idx = 3;
-        for (DiskElement child : tree.children)
-        {
-            int element_width = (static_cast<double>(child.size) / tree.size) * max_width;
-             if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + offset, origin_coord.y + (level * 20)), ImVec2(origin_coord.x + element_width + offset, origin_coord.y + 20 + (level * 20)), maximum_dissimilar_colors[color_cur_idx], child))
-             {
-                ImGui::NewLine();
-                ImGui::Text("path: %s", GetPathFromTreeNode(&child).c_str()); //debug
-             }
-            offset += element_width;
-            color_cur_idx++;
-            
-        }
-            */
     }
 }
 
