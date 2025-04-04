@@ -87,11 +87,13 @@ void UIDynamicFileVisualizer(DiskElement &tree)
     if (tree.size != 0)
     {
         static std::vector<std::vector<VisualizerElement>> de_visualizer_list;
-
         static int max_width = ImGui::GetWindowContentRegionMax().x - 64;
         static int color_idx = 0;
+        static bool btn_down = false;
         ImVec2 origin_coord = ImGui::GetCursorScreenPos();
         ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+
+        if (btn_down && !ImGui::IsMouseDown(0)) btn_down = false;
         
         if (de_visualizer_list.size() == 0)
         {
@@ -104,8 +106,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                 initial_children.push_back(VisualizerElement{&child, color_idx++ % 64, 1});
             de_visualizer_list.push_back(initial_children);
         }
-
-        int row_idx = 0;
+        unsigned int row_idx = 0;
         for (std::vector<VisualizerElement> de_row : de_visualizer_list)
         {
             unsigned int rect_offset = 0;
@@ -128,9 +129,10 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                         rect_lower_right.x = max_width;
                     if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + rect_offset, origin_coord.y + (de_column.level * 23)), rect_lower_right, maximum_dissimilar_colors[de_column.color_idx], *de_column.de))
                     {
-                        if (de_visualizer_list.size() == row_idx + 1)
+                        if (!btn_down && ImGui::IsMouseDown(0))
                         {
-                            if (de_column.de->children.size() != 0)
+                            btn_down = true;
+                            if (de_visualizer_list.size() == row_idx + 1)
                             {
                                 std::vector<VisualizerElement> current_children;
                                 for (DiskElement &child : de_column.de->children)
@@ -138,7 +140,11 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                                     child.parent = de_column.de;
                                     current_children.push_back(VisualizerElement{&child, ((color_idx++) % 64), de_column.level + 1});
                                 }
-                                de_visualizer_list.push_back(current_children);
+                                if (current_children.size()) de_visualizer_list.push_back(current_children);
+                            }
+                            else
+                            {
+                                de_visualizer_list.erase(row_idx + de_visualizer_list.end());
                             }
                         }
                     }
