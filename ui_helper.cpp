@@ -162,8 +162,7 @@ bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos
     bool pressed = false;
     draw_list->AddRectFilled(start_pos, end_pos, IM_COL32(color.r, color.g, color.b, 255));
     int rect_width = end_pos.x - start_pos.x;
-    draw_list->AddText(ImVec2(start_pos.x+6, start_pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), element.name.c_str());
-    //draw_list->AddText(ImVec2(start_pos.x+5, start_pos.y+2), IM_COL32(0, 0, 0, 255), element_name.c_str());
+    if (end_pos.x - start_pos.x > 40) draw_list->AddText(ImVec2(start_pos.x+6, start_pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), element.name.c_str());
     if ((ImGui::GetMousePos() > start_pos) && (ImGui::GetMousePos() < end_pos))
     {
         draw_list->AddRect(start_pos, end_pos, IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255));
