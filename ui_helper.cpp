@@ -86,7 +86,7 @@ void UIDynamicFileVisualizer(DiskElement tree, int level, int x_pos, int width)
 {
     if (true)
     {
-        static int max_width = ImGui::GetWindowContentRegionMax().x - 8;
+        static int max_width = ImGui::GetWindowContentRegionMax().x - 64;
         ImVec2 origin_coord = ImGui::GetCursorScreenPos();
         origin_coord.x += x_pos;
         origin_coord.y += (level * 24);
@@ -94,18 +94,45 @@ void UIDynamicFileVisualizer(DiskElement tree, int level, int x_pos, int width)
         end_coord.x += (width ? width : max_width);
         end_coord.y += 20;
         ImDrawList* draw_list = ImGui::GetForegroundDrawList();
-        DrawDiskElementRect(draw_list, origin_coord, end_coord, maximum_dissimilar_colors[13], tree.name);
+        int offset = 0;
+        int color_cur_idx = 3;
+        for (DiskElement child : tree.children)
+        {
+            int element_width = (static_cast<double>(child.size) / tree.size) * max_width;
+             if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + offset, origin_coord.y), ImVec2(origin_coord.x + element_width + offset, origin_coord.y + 20), maximum_dissimilar_colors[color_cur_idx], child.name))
+             {
+                ImGui::NewLine();
+                ImGui::Text("path: %s", GetPathFromTreeNode(&child).c_str()); //debug
+             }
+            offset += element_width;
+            color_cur_idx++;
+            
+        }
     }
 }
 
 bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, int color[3], std::string element_name)
 {
+    bool pressed = false;
     draw_list->AddRectFilled(start_pos, end_pos, IM_COL32(color[0], color[1], color[2], 255));
     int rect_width = end_pos.x - start_pos.x;
+    draw_list->AddText(ImVec2(start_pos.x+6, start_pos.y+3), IM_COL32(255, 255, 255, 255), element_name.c_str());
+    draw_list->AddText(ImVec2(start_pos.x+5, start_pos.y+2), IM_COL32(0, 0, 0, 255), element_name.c_str());
     if ((ImGui::GetMousePos() > start_pos) && (ImGui::GetMousePos() < end_pos))
     {
         draw_list->AddRect(start_pos, end_pos, IM_COL32(255, 0, 255, 255));
+        pressed = ImGui::IsMouseDown(0);
     }
+    return pressed;
+}
+
+std::string BytesToStr(uint64_t bytes)
+{
+    if (bytes < 1024) return std::to_string(bytes) + " b";
+    else if (bytes < 1024 * 1024) return std::to_string(bytes / 1024.f) + " KB";
+    else if (bytes < 1024 * 1024 * 1024) return std::to_string(bytes / 1024.f / 1024.f) + " MB";
+    else if (bytes < uint64_t(1024 * 1024 * 1024 * 1024)) return std::to_string(bytes / 1024.f / 1024.f / 1024.f) + " GB";
+    else return std::to_string(bytes) + " TB";
 }
 
 void PopulateSubDirectories(DiskElement &tree, std::string path)
