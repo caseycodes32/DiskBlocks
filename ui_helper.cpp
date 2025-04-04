@@ -1,7 +1,7 @@
 #include "ui_helper.h"
 
 RGBColor maximum_dissimilar_colors[64] = {
-    {64,64,64},
+    {0,255,120},
     {1,0,103},
     {213,255,0},
     {255,0,86},
@@ -55,7 +55,7 @@ RGBColor maximum_dissimilar_colors[64] = {
     {189,211,147},
     {229,111,254},
     {222,255,116},
-    {0,255,120},
+    {64,64,64},
     {0,155,255},
     {0,100,1},
     {0,118,255},
@@ -82,31 +82,54 @@ void UIDirectoryTree(DiskElement &tree, std::string &selected_path)
     }
 }
 
-void UIDynamicFileVisualizer(DiskElement tree, int level, int x_pos, int width)
+void UIDynamicFileVisualizer(DiskElement tree)
 {
     if (tree.size != 0)
     {
-        // populate VisualizerNode
-        
-
-
-
+        static std::vector<std::vector<VisualizerElement>> de_visualizer_list;
 
         static int max_width = ImGui::GetWindowContentRegionMax().x - 64;
         ImVec2 origin_coord = ImGui::GetCursorScreenPos();
-        origin_coord.x += x_pos;
-        origin_coord.y += (level * 24);
         ImVec2 end_coord = origin_coord;
-        end_coord.x += (width ? width : max_width);
-        end_coord.y += 20;
         ImDrawList* draw_list = ImGui::GetForegroundDrawList();
 
-        if (level == 0)
-            DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[1], tree);
+        int col_idx = 0;
+        
+        std::vector<VisualizerElement> initial_path;
+        initial_path.push_back(VisualizerElement{tree, col_idx++, 0});
+        de_visualizer_list.push_back(initial_path);
 
-        level += 1;
+        std::vector<VisualizerElement> initial_children;
+        for (DiskElement child : tree.children)
+            initial_children.push_back(VisualizerElement{child, col_idx++ % 64, 1});
+        de_visualizer_list.push_back(initial_children);
 
-        int offset = 0;
+
+        int column = 0;
+        for (std::vector<VisualizerElement> de_row : de_visualizer_list)
+        {
+            unsigned int rect_offset = 0;
+            for (VisualizerElement de_column : de_row)
+            {
+                if (de_column.de.parent == nullptr)
+                {
+                    DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[de_column.color_idx], de_column.de);
+                }
+                else
+                {
+                    uint64_t parent_disk_size = de_column.de.parent->size;
+                    uint64_t this_element_size = de_column.de.size;
+                    unsigned int this_rect_width = std::round((static_cast<double>(this_element_size) / parent_disk_size) * max_width);
+                    DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + rect_offset, origin_coord.y + (de_column.level * 20)), ImVec2(origin_coord.x + this_rect_width + rect_offset, origin_coord.y + 20 + (de_column.level * 20)), maximum_dissimilar_colors[de_column.color_idx], de_column.de);
+
+                    rect_offset += this_rect_width;
+                }
+            }
+            column++;
+        }
+
+        //DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[1], tree);
+        /*
         int color_cur_idx = 3;
         for (DiskElement child : tree.children)
         {
@@ -120,6 +143,7 @@ void UIDynamicFileVisualizer(DiskElement tree, int level, int x_pos, int width)
             color_cur_idx++;
             
         }
+            */
     }
 }
 
