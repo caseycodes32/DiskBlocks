@@ -88,7 +88,7 @@ uint64_t GetFileSize(std::string path)
     WIN32_FIND_DATAA FileData;
     HANDLE FileHandle = FindFirstFileA(path.c_str(), &FileData);
     if (FileHandle == INVALID_HANDLE_VALUE)
-        return -1;
+        return 0;
 
     FindClose(FileHandle);
     return (FileData.nFileSizeLow | (__int64)FileData.nFileSizeHigh << 32);
@@ -129,7 +129,7 @@ void PopulateTree(DiskElement &tree, std::string path, std::string &workingdir)
     }
 }
 
-int PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std::string &workingdir)
+void PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std::string &workingdir)
 {
     tree.name = path;
     workingdir = path;
@@ -137,8 +137,7 @@ int PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std:
     if (!PathIsDirectory(GetPathFromTreeNode(&tree)))
     {
         tree.is_directory = false;
-        tree.size = GetFileSize(path);
-        return tree.size;
+        tree.size = GetFileSize(GetPathFromTreeNode(&tree));
     }
     else
     {
@@ -148,11 +147,11 @@ int PopulateTree2(DiskElement &tree, DiskElement *parent, std::string path, std:
         for (std::string DirElement : ListElementsInDirectory(GetPathFromTreeNode(&tree)))
         {
             DiskElement child;
-            directory_size += PopulateTree2(child, &tree, DirElement.substr(DirElement.find_last_of("/\\") + 1), workingdir);
+            PopulateTree2(child, &tree, DirElement.substr(DirElement.find_last_of("/\\") + 1), workingdir);
             tree.children.push_back(child);
+            directory_size += child.size;
         }
         tree.size = directory_size;
-        return tree.size;
     }
 }
 
