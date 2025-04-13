@@ -144,7 +144,8 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                             }
                             else
                             {
-                                de_visualizer_list.erase(row_idx + de_visualizer_list.end());
+                                de_visualizer_list.erase(de_visualizer_list.begin() + de_column.level + 1, de_visualizer_list.end());
+                                return;
                             }
                         }
                     }
