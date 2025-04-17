@@ -90,6 +90,8 @@ void UIDynamicFileVisualizer(DiskElement &tree)
         static int max_width = ImGui::GetWindowContentRegionMax().x - 64;
         static int color_idx = 0;
         static bool btn_down = false;
+        const int rect_height = 22;
+        const int rect_spacing = 5;
         ImVec2 origin_coord = ImGui::GetCursorScreenPos();
         ImDrawList* draw_list = ImGui::GetForegroundDrawList();
 
@@ -115,7 +117,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
             {
                 if (de_column.de->parent == nullptr)
                 {
-                    DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + 20), maximum_dissimilar_colors[de_column.color_idx], *de_column.de);
+                    DrawDiskElementRect(draw_list, ImVec2(origin_coord), ImVec2(origin_coord.x + max_width, origin_coord.y + rect_height), maximum_dissimilar_colors[de_column.color_idx], *de_column.de);
                 }
                 else
                 {
@@ -124,10 +126,10 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                     unsigned int this_rect_width;
                     if (parent_disk_size && this_element_size) this_rect_width = std::round((static_cast<double>(this_element_size) / parent_disk_size) * max_width);
                     else this_rect_width = 1;
-                    ImVec2 rect_lower_right = {origin_coord.x + this_rect_width + rect_offset, origin_coord.y + 20 + (de_column.level * 23)};
+                    ImVec2 rect_lower_right = {origin_coord.x + this_rect_width + rect_offset, origin_coord.y + rect_height + (de_column.level * (rect_height + rect_spacing))};
                     if (col_idx + 1 == de_row.size())
                         rect_lower_right.x = origin_coord.x + max_width;
-                    if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + rect_offset, origin_coord.y + (de_column.level * 23)), rect_lower_right, maximum_dissimilar_colors[de_column.color_idx], *de_column.de))
+                    if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + rect_offset, origin_coord.y + (de_column.level * (rect_height + rect_spacing))), rect_lower_right, maximum_dissimilar_colors[de_column.color_idx], *de_column.de))
                     {
                         if (!btn_down && ImGui::IsMouseDown(0))
                         {
