@@ -91,7 +91,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
         static int color_idx = 0;
         static bool btn_down = false;
         const int rect_height = 22;
-        const int rect_spacing = 5;
+        const int rect_spacing = 7;
         ImVec2 origin_coord = ImGui::GetCursorScreenPos();
         ImDrawList* draw_list = ImGui::GetForegroundDrawList();
 
@@ -153,6 +153,9 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                     }
                     rect_offset += this_rect_width;
                 }
+                if (row_idx)
+                    draw_list->AddLine(ImVec2(origin_coord.x, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), ImVec2(origin_coord.x + max_width, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), IM_COL32(200, 200, 200, 255));
+
                 col_idx++;
             }
             row_idx++;
