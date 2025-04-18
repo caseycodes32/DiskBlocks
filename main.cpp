@@ -205,6 +205,8 @@ int main(int, char**)
                 ImGui::Text("%s", s_ScanActiveDirectory.c_str());
                 ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Loading %s", GetCurrentLoadingSymbol().c_str());
             }
+            if (ts_ScanComplete == ThreadStatus::COMPLETE)
+                ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Scan Complete!");
         ImGui::EndChild();
         ImGui::SameLine();
         ImGui::BeginChild("Visualization Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
