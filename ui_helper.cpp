@@ -87,6 +87,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
     if (tree.size != 0)
     {
         static std::vector<std::vector<VisualizerElement>> de_visualizer_list;
+        static DiskElement *last_selected_element = nullptr;
         static int max_width = ImGui::GetWindowContentRegionMax().x - 64;
         static int color_idx = 0;
         static bool btn_down = false;
@@ -140,6 +141,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
 
                     if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + rect_offset, origin_coord.y + (de_column.level * (rect_height + rect_spacing))), rect_lower_right, maximum_dissimilar_colors[de_column.color_idx], *de_column.de))
                     {
+                        last_selected_element = de_column.de;
                         if (!btn_down && ImGui::IsMouseDown(0))
                         {
                             btn_down = true;
@@ -169,7 +171,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                 if (row_idx)
                 {
                     draw_list->AddLine(ImVec2(origin_coord.x, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), ImVec2(origin_coord.x + max_width + 56, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), IM_COL32(200, 200, 200, 255));
-                    draw_list->AddText(ImVec2(origin_coord.x + max_width + 8, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) + 3), IM_COL32(255, 255, 255, 255), BytesToStr(de_row.at(0).de->parent->size).c_str());
+                    draw_list->AddText(ImVec2(origin_coord.x + max_width + 10, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) + 3), IM_COL32(255, 255, 255, 255), BytesToStr(de_row.at(0).de->parent->size).c_str());
                 }
 
                 col_idx++;
@@ -178,6 +180,12 @@ void UIDynamicFileVisualizer(DiskElement &tree)
         }
 
         draw_list->AddLine(ImVec2(origin_coord.x + max_width + 4, origin_coord.y - 1), ImVec2(origin_coord.x + max_width + 4, origin_coord.y + (row_idx * (rect_height + rect_spacing)) - 8), IM_COL32(200, 200, 200, 255));
+        
+        ImVec2 ig_cursor_pos = ImGui::GetCursorPos();
+        ig_cursor_pos.y += row_idx * (rect_height + rect_spacing);
+        ImGui::SetCursorPos(ig_cursor_pos);
+        if (last_selected_element != nullptr)
+            PrintSelectedDEInformation(last_selected_element);
     }
     return;
 }
@@ -259,6 +267,18 @@ std::string WraparoundText(std::string text, int char_length, int index)
     }
 
     return new_text;
+}
+
+void PrintSelectedDEInformation(DiskElement *element)
+{
+    std::string file_type;
+    element->is_directory ? file_type = "directory" : file_type = "file";
+
+    ImGui::Separator();
+    ImGui::Text("Name: %s", element->name.c_str());
+    ImGui::Text("Type: %s", file_type.c_str());
+    ImGui::Text("Size: %s", BytesToStr(element->size).c_str());
+    ImGui::Text("Path: %s", GetPathFromTreeNode(element).c_str());
 }
 
 RGBColor GetColorNegative(RGBColor color)

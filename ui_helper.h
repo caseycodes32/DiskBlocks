@@ -30,6 +30,7 @@ void UIDynamicFileVisualizer(DiskElement &tree);
 bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, RGBColor color, DiskElement element);
 void DrawDiskElementText(ImDrawList* draw_list, ImVec2 pos, RGBColor color, std::string text, int constraint, bool cycle);
 std::string WraparoundText(std::string text, int char_length, int index);
+void PrintSelectedDEInformation(DiskElement *element);
 void DrawAnimatedDownArrow(ImDrawList* draw_list, ImVec2 pos);
 RGBColor GetColorNegative(RGBColor color);
 std::string BytesToStr(uint64_t bytes);

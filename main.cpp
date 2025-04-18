@@ -28,7 +28,6 @@ static POINT            g_LastMousePos;
 // Program Data
 std::thread             t_GenerateTree;
 ThreadStatus            ts_ScanComplete;
-bool                    b_ScanLastModified;
 std::string             s_ScanActiveDirectory;
 char                    c_InputPath[260];
 DiskElement             de_FileTree;
@@ -187,7 +186,7 @@ int main(int, char**)
             }
             if (i_DriveIdx != -1)
             {
-                ImGui::BeginChild("Directory Selection Tree", ImVec2(-1, 140));
+                ImGui::BeginChild("Directory Selection Tree", ImVec2(-1, 240));
                     UIDirectoryTree(de_SelectionTree, s_SelectedPath);
                 ImGui::EndChild();
             }
@@ -206,7 +205,6 @@ int main(int, char**)
                 ImGui::Text("%s", s_ScanActiveDirectory.c_str());
                 ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Loading %s", GetCurrentLoadingSymbol().c_str());
             }
-            ImGui::Checkbox("Scan file access time", &b_ScanLastModified);
         ImGui::EndChild();
         ImGui::SameLine();
         ImGui::BeginChild("Visualization Pane", ImVec2(k_WindowSize.x / 2 - 12, k_WindowSize.y - 36), ImGuiChildFlags_Borders);
