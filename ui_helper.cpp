@@ -152,7 +152,9 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                             }
                         }
                     }
-                    if (de_column.de == de_row.at(row_idx + 1).de) DrawAnimatedDownArrow(draw_list, ImVec2(rect_lower_right.x - 15, rect_lower_right.y - 15));
+                    if (row_idx != de_visualizer_list.size() - 1)
+                        if (de_column.de == de_visualizer_list.at(row_idx + 1).at(0).de->parent)
+                            DrawAnimatedDownArrow(draw_list, ImVec2(rect_lower_right.x - 15, rect_lower_right.y - 15));
                     rect_offset += this_rect_width;
                 }
                 if (row_idx)
