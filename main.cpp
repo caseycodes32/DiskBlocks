@@ -198,7 +198,7 @@ int main(int, char**)
                 if (ts_ScanComplete == ThreadStatus::COMPLETE)
                     t_GenerateTree.join();
                 ts_ScanComplete = ThreadStatus::WAITING;
-                de_FileTree = DiskElement();
+                de_FileTree = {};
                 t_GenerateTree = InitializePopulateTreeThread(de_FileTree, s_SelectedPath, ts_ScanComplete, s_ScanActiveDirectory);
             }
             if (ts_ScanComplete == ThreadStatus::RUNNING)

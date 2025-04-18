@@ -108,6 +108,14 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                 initial_children.push_back(VisualizerElement{&child, color_idx++ % 64, 1});
             de_visualizer_list.push_back(initial_children);
         }
+        else
+        {
+            if (de_visualizer_list.at(0).at(0).de != &tree)
+            {
+                de_visualizer_list.clear();
+                return;
+            }
+        }
         unsigned int row_idx = 0;
         for (std::vector<VisualizerElement> de_row : de_visualizer_list)
         {
@@ -154,7 +162,8 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                     }
                     if (row_idx != de_visualizer_list.size() - 1)
                         if (de_column.de == de_visualizer_list.at(row_idx + 1).at(0).de->parent)
-                            DrawAnimatedDownArrow(draw_list, ImVec2(rect_lower_right.x - 15, rect_lower_right.y - 15));
+                            if (this_rect_width > 20) DrawAnimatedDownArrow(draw_list, ImVec2(rect_lower_right.x - 12, rect_lower_right.y - 14));
+                            else DrawAnimatedDownArrow(draw_list, ImVec2(rect_lower_right.x - 6, rect_lower_right.y - 14));
                     rect_offset += this_rect_width;
                 }
                 if (row_idx)
@@ -170,6 +179,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
 
         draw_list->AddLine(ImVec2(origin_coord.x + max_width + 4, origin_coord.y - 1), ImVec2(origin_coord.x + max_width + 4, origin_coord.y + (row_idx * (rect_height + rect_spacing)) - 8), IM_COL32(200, 200, 200, 255));
     }
+    return;
 }
 
 bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, RGBColor color, DiskElement element)
