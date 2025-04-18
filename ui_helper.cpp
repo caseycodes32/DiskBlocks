@@ -166,17 +166,19 @@ void UIDynamicFileVisualizer(DiskElement &tree)
 bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, RGBColor color, DiskElement element)
 {
     bool pressed = false;
+    bool hovered = false;
     draw_list->AddRectFilled(start_pos, end_pos, IM_COL32(color.r, color.g, color.b, 255));
     int rect_width = end_pos.x - start_pos.x;
-
-
-    DrawDiskElementText(draw_list, start_pos, color, element.name, (end_pos.x - start_pos.x), false);
     
     if ((ImGui::GetMousePos() > start_pos) && (ImGui::GetMousePos() < end_pos))
     {
         draw_list->AddRect(start_pos, end_pos, IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255));
         pressed = ImGui::IsMouseDown(0);
+        hovered = true;
     }
+
+    DrawDiskElementText(draw_list, start_pos, color, element.name, (end_pos.x - start_pos.x), hovered);
+
     return pressed;
 }
 
@@ -185,7 +187,44 @@ void DrawDiskElementText(ImDrawList* draw_list, ImVec2 pos, RGBColor color, std:
     int max_chars = 0;
     max_chars = (constraint - 9) / 7;
     std::string shortened_text = text.substr(0, max_chars);
-    if (constraint > 20 && !cycle) draw_list->AddText(ImVec2(pos.x+6, pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), shortened_text.c_str());
+
+    if (shortened_text.length() == text.length()) cycle = false;
+    if (constraint > 20 && !cycle)
+        draw_list->AddText(ImVec2(pos.x+6, pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), shortened_text.c_str());
+    else if (constraint > 20)
+    {
+        static long long start_time = curtime();
+        long long delta_time = curtime();
+        static int index = 0;
+
+        if (delta_time - start_time > 200)
+        {
+            start_time = curtime();
+            index += 1;
+        }
+        if (index == text.length()) index = 0;
+
+        std::string wrap_text = WraparoundText(text, max_chars, index);
+        draw_list->AddText(ImVec2(pos.x+6, pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), wrap_text.c_str());
+
+    }
+}
+
+std::string WraparoundText(std::string text, int char_length, int index)
+{
+    std::string new_text;
+    const int space_chars = 1;
+    std::string start_text = std::string(text + " ");
+
+    new_text = start_text.substr(index, start_text.length() - index);
+    if (new_text.length() > char_length) new_text = new_text.substr(0, char_length);
+    else
+    {
+        int remaining_chars = char_length - new_text.length();
+        new_text += start_text.substr(0, remaining_chars);
+    }
+
+    return new_text;
 }
 
 RGBColor GetColorNegative(RGBColor color)
