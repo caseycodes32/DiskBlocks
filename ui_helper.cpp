@@ -129,6 +129,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                     ImVec2 rect_lower_right = {origin_coord.x + this_rect_width + rect_offset, origin_coord.y + rect_height + (de_column.level * (rect_height + rect_spacing))};
                     if (col_idx + 1 == de_row.size())
                         rect_lower_right.x = origin_coord.x + max_width;
+
                     if (DrawDiskElementRect(draw_list, ImVec2(origin_coord.x + rect_offset, origin_coord.y + (de_column.level * (rect_height + rect_spacing))), rect_lower_right, maximum_dissimilar_colors[de_column.color_idx], *de_column.de))
                     {
                         if (!btn_down && ImGui::IsMouseDown(0))
@@ -151,6 +152,7 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                             }
                         }
                     }
+                    if (de_column.de == de_row.at(row_idx + 1).de) DrawAnimatedDownArrow(draw_list, ImVec2(rect_lower_right.x - 15, rect_lower_right.y - 15));
                     rect_offset += this_rect_width;
                 }
                 if (row_idx)
@@ -211,6 +213,23 @@ void DrawDiskElementText(ImDrawList* draw_list, ImVec2 pos, RGBColor color, std:
         std::string wrap_text = WraparoundText(text, max_chars, index);
         draw_list->AddText(ImVec2(pos.x+6, pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), wrap_text.c_str());
     }
+}
+
+void DrawAnimatedDownArrow(ImDrawList* draw_list, ImVec2 pos)
+{
+    static bool invert_colors = false;
+    static RGBColor white{255, 255, 255};
+    static RGBColor black{0, 0, 0};
+    static unsigned long long start_time = curtime();
+    unsigned long long delta_time = curtime();
+    static int index = 0;
+    if (delta_time - start_time > 200)
+    {
+        start_time = curtime();
+        invert_colors = !invert_colors;
+    }
+    draw_list->AddTriangleFilled(pos, ImVec2(pos.x + 6, pos.y), ImVec2(pos.x + 3, pos.y + 6), invert_colors ? IM_COL32(white.r, white.g, white.b, 255) : IM_COL32(black.r, black.g, black.b, 255));
+    draw_list->AddTriangle(pos, ImVec2(pos.x + 6, pos.y), ImVec2(pos.x + 3, pos.y + 6), invert_colors ? IM_COL32(black.r, black.g, black.b, 255) : IM_COL32(white.r, white.g, white.b, 255));
 }
 
 std::string WraparoundText(std::string text, int char_length, int index)
