@@ -154,7 +154,10 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                     rect_offset += this_rect_width;
                 }
                 if (row_idx)
-                    draw_list->AddLine(ImVec2(origin_coord.x, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), ImVec2(origin_coord.x + max_width + 20, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), IM_COL32(200, 200, 200, 255));
+                {
+                    draw_list->AddLine(ImVec2(origin_coord.x, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), ImVec2(origin_coord.x + max_width + 56, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), IM_COL32(200, 200, 200, 255));
+                    draw_list->AddText(ImVec2(origin_coord.x + max_width + 8, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) + 3), IM_COL32(255, 255, 255, 255), BytesToStr(de_row.at(0).de->parent->size).c_str());
+                }
 
                 col_idx++;
             }
@@ -235,7 +238,7 @@ RGBColor GetColorNegative(RGBColor color)
 std::string BytesToStr(uint64_t bytes)
 {
     if (bytes < 1024) return std::to_string(bytes) + " b";
-    else if (bytes < 1024 * 1048576) return std::to_string(bytes / 1024) + " KB";
+    else if (bytes < 1048576) return std::to_string(bytes / 1024) + " KB";
     else if (bytes < 1073741824) return std::to_string(bytes / 1024 / 1024) + " MB";
     else if (bytes < uint64_t(1099511627776)) return std::to_string(bytes / 1024 / 1024 / 1024) + " GB";
     else return std::to_string(bytes) + " TB";
