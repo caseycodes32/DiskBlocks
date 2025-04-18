@@ -28,6 +28,7 @@ struct RGBColor
 void UIDirectoryTree(DiskElement &tree, std::string &selected_path);
 void UIDynamicFileVisualizer(DiskElement &tree);
 bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos, RGBColor color, DiskElement element);
+void DrawDiskElementText(ImDrawList* draw_list, ImVec2 pos, RGBColor color, std::string text, int constraint, bool cycle);
 RGBColor GetColorNegative(RGBColor color);
 std::string BytesToStr(uint64_t bytes);
 void PopulateSubDirectories(DiskElement &tree, std::string path);

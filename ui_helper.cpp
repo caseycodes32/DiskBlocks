@@ -168,13 +168,24 @@ bool DrawDiskElementRect(ImDrawList* draw_list, ImVec2 start_pos, ImVec2 end_pos
     bool pressed = false;
     draw_list->AddRectFilled(start_pos, end_pos, IM_COL32(color.r, color.g, color.b, 255));
     int rect_width = end_pos.x - start_pos.x;
-    if (end_pos.x - start_pos.x > 40) draw_list->AddText(ImVec2(start_pos.x+6, start_pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), element.name.c_str());
+
+
+    DrawDiskElementText(draw_list, start_pos, color, element.name, (end_pos.x - start_pos.x), false);
+    
     if ((ImGui::GetMousePos() > start_pos) && (ImGui::GetMousePos() < end_pos))
     {
         draw_list->AddRect(start_pos, end_pos, IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255));
         pressed = ImGui::IsMouseDown(0);
     }
     return pressed;
+}
+
+void DrawDiskElementText(ImDrawList* draw_list, ImVec2 pos, RGBColor color, std::string text, int constraint, bool cycle)
+{
+    int max_chars = 0;
+    max_chars = (constraint - 9) / 7;
+    std::string shortened_text = text.substr(0, max_chars);
+    if (constraint > 20 && !cycle) draw_list->AddText(ImVec2(pos.x+6, pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), shortened_text.c_str());
 }
 
 RGBColor GetColorNegative(RGBColor color)
