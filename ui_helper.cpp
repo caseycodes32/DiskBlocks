@@ -154,12 +154,14 @@ void UIDynamicFileVisualizer(DiskElement &tree)
                     rect_offset += this_rect_width;
                 }
                 if (row_idx)
-                    draw_list->AddLine(ImVec2(origin_coord.x, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), ImVec2(origin_coord.x + max_width, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), IM_COL32(200, 200, 200, 255));
+                    draw_list->AddLine(ImVec2(origin_coord.x, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), ImVec2(origin_coord.x + max_width + 20, origin_coord.y + (de_column.level * (rect_height + rect_spacing)) - 4), IM_COL32(200, 200, 200, 255));
 
                 col_idx++;
             }
             row_idx++;
         }
+
+        draw_list->AddLine(ImVec2(origin_coord.x + max_width + 4, origin_coord.y - 1), ImVec2(origin_coord.x + max_width + 4, origin_coord.y + (row_idx * (rect_height + rect_spacing)) - 8), IM_COL32(200, 200, 200, 255));
     }
 }
 
@@ -189,12 +191,12 @@ void DrawDiskElementText(ImDrawList* draw_list, ImVec2 pos, RGBColor color, std:
     std::string shortened_text = text.substr(0, max_chars);
 
     if (shortened_text.length() == text.length()) cycle = false;
-    if (constraint > 20 && !cycle)
+    if (constraint > 16 && !cycle)
         draw_list->AddText(ImVec2(pos.x+6, pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), shortened_text.c_str());
-    else if (constraint > 20)
+    else if (constraint > 16)
     {
-        static long long start_time = curtime();
-        long long delta_time = curtime();
+        static unsigned long long start_time = curtime();
+        unsigned long long delta_time = curtime();
         static int index = 0;
         if (delta_time - start_time > 200)
         {
@@ -205,7 +207,6 @@ void DrawDiskElementText(ImDrawList* draw_list, ImVec2 pos, RGBColor color, std:
 
         std::string wrap_text = WraparoundText(text, max_chars, index);
         draw_list->AddText(ImVec2(pos.x+6, pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), wrap_text.c_str());
-
     }
 }
 
@@ -234,9 +235,9 @@ RGBColor GetColorNegative(RGBColor color)
 std::string BytesToStr(uint64_t bytes)
 {
     if (bytes < 1024) return std::to_string(bytes) + " b";
-    else if (bytes < 1024 * 1024) return std::to_string(bytes / 1024.f) + " KB";
-    else if (bytes < 1024 * 1024 * 1024) return std::to_string(bytes / 1024.f / 1024.f) + " MB";
-    else if (bytes < uint64_t(1024 * 1024 * 1024 * 1024)) return std::to_string(bytes / 1024.f / 1024.f / 1024.f) + " GB";
+    else if (bytes < 1024 * 1048576) return std::to_string(bytes / 1024) + " KB";
+    else if (bytes < 1073741824) return std::to_string(bytes / 1024 / 1024) + " MB";
+    else if (bytes < uint64_t(1099511627776)) return std::to_string(bytes / 1024 / 1024 / 1024) + " GB";
     else return std::to_string(bytes) + " TB";
 }
 
@@ -257,8 +258,8 @@ std::string GetDirectoryNameFromPath(std::string path)
 
 std::string GetCurrentLoadingSymbol()
 {
-    static long long start_time = curtime();
-    long long delta_time = curtime();
+    static unsigned long long start_time = curtime();
+    unsigned long long delta_time = curtime();
 
     const char display_symbols[4] = {'|', '/', '-', '\\'};
     static int current_symbol = 0;
