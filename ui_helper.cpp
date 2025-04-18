@@ -196,13 +196,12 @@ void DrawDiskElementText(ImDrawList* draw_list, ImVec2 pos, RGBColor color, std:
         static long long start_time = curtime();
         long long delta_time = curtime();
         static int index = 0;
-
         if (delta_time - start_time > 200)
         {
             start_time = curtime();
             index += 1;
         }
-        if (index == text.length()) index = 0;
+        if (index >= text.length()) index = 0;
 
         std::string wrap_text = WraparoundText(text, max_chars, index);
         draw_list->AddText(ImVec2(pos.x+6, pos.y+3), IM_COL32(GetColorNegative(color).r, GetColorNegative(color).g, GetColorNegative(color).b, 255), wrap_text.c_str());
